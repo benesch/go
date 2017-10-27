@@ -2,37 +2,36 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build linux,cgo darwin,cgo
+// +build windows,cgo
 
 package plugin
 
 /*
-#cgo linux LDFLAGS: -ldl
-#include <dlfcn.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <stdint.h>
+#define PATH_MAX 4096
+#include <windows.h>
 
-#include <stdio.h>
-
-static uintptr_t pluginOpen(const char* path, char** err) {
-	void* h = dlopen(path, RTLD_NOW|RTLD_GLOBAL);
+static void* pluginOpen(const char* path, char** err) {
+	SetErrorMode(SEM_FAILCRITICALERRORS);
+	void* h = LoadLibrary(path);
 	if (h == NULL) {
-		*err = (char*)dlerror();
+		FormatMessage(
+			FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), err, 0, NULL);
 	}
-	return (uintptr_t)h;
+	return h;
 }
 
-static void* pluginLookup(uintptr_t h, const char* name, char** err) {
-	void* r = dlsym((void*)h, name);
+static void* pluginLookup(void* h, const char* name, char** err) {
+	void* r = GetProcAddress(h, name);
 	if (r == NULL) {
-		*err = (char*)dlerror();
+		FormatMessage(
+			FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_IGNORE_INSERTS,
+			NULL, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), err, 0, NULL);
 	}
 	return r;
 }
 */
 import "C"
-
 import (
 	"errors"
 	"sync"
@@ -50,16 +49,16 @@ func lastIndexByte(s string, c byte) int {
 }
 
 func open(name string) (*Plugin, error) {
-	cPath := make([]byte, C.PATH_MAX+1)
+	// cPath := make([]byte, C.PATH_MAX+1)
 	cRelName := make([]byte, len(name)+1)
 	copy(cRelName, name)
-	if C.realpath(
-		(*C.char)(unsafe.Pointer(&cRelName[0])),
-		(*C.char)(unsafe.Pointer(&cPath[0]))) == nil {
-		return nil, errors.New(`plugin.Open("` + name + `"): realpath failed`)
-	}
+	// if C.realpath(
+	// 	(*C.char)(unsafe.Pointer(&cRelName[0])),
+	// 	(*C.char)(unsafe.Pointer(&cPath[0]))) == nil {
+	// 	return nil, errors.New(`plugin.Open("` + name + `"): realpath failed`)
+	// }
 
-	filepath := C.GoString((*C.char)(unsafe.Pointer(&cPath[0])))
+	filepath := C.GoString((*C.char)(unsafe.Pointer(&cRelName[0])))
 
 	pluginsMu.Lock()
 	if p := plugins[filepath]; p != nil {
@@ -71,8 +70,8 @@ func open(name string) (*Plugin, error) {
 		return p, nil
 	}
 	var cErr *C.char
-	h := C.pluginOpen((*C.char)(unsafe.Pointer(&cPath[0])), &cErr)
-	if h == 0 {
+	h := C.pluginOpen((*C.char)(unsafe.Pointer(&cRelName[0])), &cErr)
+	if h == C.NULL {
 		pluginsMu.Unlock()
 		return nil, errors.New(`plugin.Open("` + name + `"): ` + C.GoString(cErr))
 	}

@@ -483,8 +483,15 @@ func (f *peFile) addInitArray(ctxt *Link) *peSection {
 	ctxt.Out.SeekSet(int64(sect.pointerToRawData))
 	sect.checkOffset(ctxt.Out.Offset())
 
-	init_entry := ctxt.Syms.Lookup(*flagEntrySymbol, 0)
+	var init_entry *sym.Symbol
+	if ctxt.BuildMode == BuildModePlugin {
+		fmt.Println("using plugin ctor")
+		init_entry = ctxt.Syms.Lookup("go.link.addmoduledata", 0)
+	} else {
+		init_entry = ctxt.Syms.Lookup(*flagEntrySymbol, 0)
+	}
 	addr := uint64(init_entry.Value) - init_entry.Sect.Vaddr
+	fmt.Printf("init_entry addr is %x\n", addr)
 	switch objabi.GOARCH {
 	case "386":
 		ctxt.Out.Write32(uint32(addr))
@@ -548,6 +555,7 @@ func (f *peFile) emitRelocations(ctxt *Link) {
 		return relocs
 	}
 
+	fmt.Println("textSect")
 	f.textSect.emitRelocations(ctxt.Out, func() int {
 		n := relocsect(Segtext.Sections[0], ctxt.Textp, Segtext.Vaddr)
 		for _, sect := range Segtext.Sections[1:] {
@@ -556,6 +564,7 @@ func (f *peFile) emitRelocations(ctxt *Link) {
 		return n
 	})
 
+	fmt.Println("dataSect")
 	f.dataSect.emitRelocations(ctxt.Out, func() int {
 		var n int
 		for _, sect := range Segdata.Sections {
@@ -564,6 +573,7 @@ func (f *peFile) emitRelocations(ctxt *Link) {
 		return n
 	})
 
+	fmt.Println("Segdwarf")
 dwarfLoop:
 	for _, sect := range Segdwarf.Sections {
 		for _, pesect := range f.sections {
@@ -577,6 +587,7 @@ dwarfLoop:
 		Errorf(nil, "emitRelocations: could not find %q section", sect.Name)
 	}
 
+	fmt.Println("ctorsSect")
 	f.ctorsSect.emitRelocations(ctxt.Out, func() int {
 		dottext := ctxt.Syms.Lookup(".text", 0)
 		ctxt.Out.Write32(0)
@@ -1357,7 +1368,7 @@ func Asmbpe(ctxt *Link) {
 	}
 	pefile.writeSymbolTableAndStringTable(ctxt)
 	addpersrc(ctxt)
-	if ctxt.LinkMode == LinkExternal {
+	if ctxt.LinkMode == LinkExternal && ctxt.BuildMode != BuildModePlugin {
 		pefile.emitRelocations(ctxt)
 	}
 

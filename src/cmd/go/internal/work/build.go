@@ -349,11 +349,13 @@ func BuildModeInit() {
 			codegenArg = "-fPIC"
 		} else {
 			switch platform {
-			case "linux/amd64", "linux/arm", "linux/arm64", "linux/386", "linux/s390x", "linux/ppc64le",
-				"android/amd64", "android/arm", "android/arm64", "android/386":
 			case "darwin/amd64":
 				// Skip DWARF generation due to #21647
 				cfg.BuildLdflags = append(cfg.BuildLdflags, "-w")
+				fallthrough
+			case "linux/amd64", "linux/arm", "linux/arm64", "linux/386", "linux/s390x", "linux/ppc64le",
+				"android/amd64", "android/arm", "android/arm64", "android/386":
+			case "windows/amd64":
 			default:
 				base.Fatalf("-buildmode=plugin not supported on %s\n", platform)
 			}
