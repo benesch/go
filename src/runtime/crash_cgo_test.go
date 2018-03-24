@@ -252,7 +252,7 @@ func TestCgoCCodeSIGPROF(t *testing.T) {
 
 func TestCgoCrashTraceback(t *testing.T) {
 	t.Parallel()
-	if runtime.GOOS != "linux" || (runtime.GOARCH != "amd64" && runtime.GOARCH != "ppc64le") {
+	if (runtime.GOOS != "linux" && runtime.GOOS != "darwin") || (runtime.GOARCH != "amd64" && runtime.GOARCH != "ppc64le") {
 		t.Skipf("not yet supported on %s/%s", runtime.GOOS, runtime.GOARCH)
 	}
 	got := runTestProg(t, "testprogcgo", "CrashTraceback")

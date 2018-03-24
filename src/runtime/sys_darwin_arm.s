@@ -263,6 +263,10 @@ TEXT runtime·sigtramp(SB),NOSPLIT,$0
 	MOVW    ucontext-4(FP), R0 // load ucontext
 	B	ret
 
+TEXT runtime·cgoSigtramp(SB),NOSPLIT,$0
+	MOVW  	$runtime·sigtramp(SB), R11
+	B	(R11)
+
 cont:
 	// Restore R0
 	MOVM.IA.W (R13), [R0]

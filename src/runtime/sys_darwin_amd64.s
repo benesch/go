@@ -363,6 +363,62 @@ TEXT runtime·sigtramp(SB),NOSPLIT,$40
 	SYSCALL
 	INT $3 // not reached
 
+// Used instead of sigtramp in programs that use cgo.
+// Arguments from kernel are in DI, SI, DX, CX, and R8.
+TEXT runtime·cgoSigtramp(SB),NOSPLIT,$24
+	// If no traceback function, do usual sigtramp.
+	MOVQ	runtime·cgoTraceback(SB), AX
+	TESTQ	AX, AX
+	JZ	sigtramp
+
+	// If no traceback support function, which means that
+	// runtime/cgo was not linked in, do usual sigtramp.
+	MOVQ	_cgo_callers(SB), AX
+	TESTQ	AX, AX
+	JZ	sigtramp
+
+	// Figure out if we are currently in a cgo call.
+	// If not, just do usual sigtramp.
+	get_tls(AX)
+	MOVQ	g(AX),AX
+	TESTQ	AX, AX
+	JZ	sigtramp        // g == nil
+	MOVQ	g_m(AX), AX
+	TESTQ	AX, AX
+	JZ	sigtramp        // g.m == nil
+	MOVL	m_ncgo(AX), BX
+	TESTL	BX, BX
+	JZ	sigtramp        // g.m.ncgo == 0
+	MOVQ	m_curg(AX), BX
+	TESTQ	BX, BX
+	JZ	sigtramp        // g.m.curg == nil
+	MOVQ	g_syscallsp(BX), BX
+	TESTQ	BX, BX
+	JZ	sigtramp        // g.m.curg.syscallsp == 0
+	MOVQ	m_cgoCallers(AX), BX
+	TESTQ	BX, BX
+	JZ	sigtramp        // g.m.cgoCallers == nil
+	MOVL	m_cgoCallersUse(AX), BX
+	TESTL	BX, BX
+	JNZ	sigtramp	// g.m.cgoCallersUse != 0
+
+	// Jump to a function in runtime/cgo.
+	// That function, written in C, will call the user's traceback
+	// function with proper unwind info, and will then call sigtramp.
+	// The first five arguments are already in registers. Set the remaining
+	// three now. Arguments seven and eight are passed on the stack.
+	// No need to write a return address, as cgoTraceback never returns.
+	MOVQ	runtime·cgoTraceback(SB), R9
+	MOVQ    m_cgoCallers(AX), BX
+	MOVQ	BX, 8(SP)
+	MOVQ	$runtime·sigtramp(SB), BX
+	MOVQ	BX, 16(SP)
+	MOVQ	_cgo_callers(SB), AX
+	JMP	AX
+
+sigtramp:
+	JMP	runtime·sigtramp(SB)
+
 TEXT runtime·mmap(SB),NOSPLIT,$0
 	MOVQ	addr+0(FP), DI		// arg 1 addr
 	MOVQ	n+8(FP), SI		// arg 2 len

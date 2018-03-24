@@ -343,6 +343,9 @@ TEXT runtime·sigtramp(SB),NOSPLIT,$20
 	MOVL	$0xf1, 0xf1  // crash
 	RET
 
+TEXT runtime·cgoSigtramp(SB),NOSPLIT,$0
+	JMP	runtime·sigtramp(SB)
+
 TEXT runtime·sigaltstack(SB),NOSPLIT,$0
 	MOVL	$53, AX
 	INT	$0x80

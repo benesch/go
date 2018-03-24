@@ -504,6 +504,7 @@ func sigaltstack(new, old *stackt)
 // darwin/arm64 uses registers instead of stack-based arguments.
 // TODO: does this matter?
 func sigtramp(fn uintptr, infostyle, sig uint32, info *siginfo, ctx unsafe.Pointer)
+func cgoSigtramp(fn uintptr, infostyle, sig uint32, info *siginfo, ctx unsafe.Pointer)
 
 //go:noescape
 func setitimer(mode int32, new, old *itimerval)
@@ -523,7 +524,11 @@ func setsig(i uint32, fn uintptr) {
 	var sa sigactiont
 	sa.sa_flags = _SA_SIGINFO | _SA_ONSTACK | _SA_RESTART
 	sa.sa_mask = ^uint32(0)
-	sa.sa_tramp = unsafe.Pointer(funcPC(sigtramp)) // runtime·sigtramp's job is to call into real handler
+	if iscgo {
+		sa.sa_tramp = unsafe.Pointer(funcPC(cgoSigtramp))
+	} else {
+		sa.sa_tramp = unsafe.Pointer(funcPC(sigtramp)) // runtime·sigtramp's job is to call into real handler
+	}
 	*(*uintptr)(unsafe.Pointer(&sa.__sigaction_u)) = fn
 	sigaction(i, &sa, nil)
 }
@@ -539,7 +544,11 @@ func setsigstack(i uint32) {
 	}
 	var sa sigactiont
 	*(*uintptr)(unsafe.Pointer(&sa.__sigaction_u)) = handler
-	sa.sa_tramp = unsafe.Pointer(funcPC(sigtramp))
+	if iscgo {
+		sa.sa_tramp = unsafe.Pointer(funcPC(cgoSigtramp))
+	} else {
+		sa.sa_tramp = unsafe.Pointer(funcPC(sigtramp))
+	}
 	sa.sa_mask = osa.sa_mask
 	sa.sa_flags = osa.sa_flags | _SA_ONSTACK
 	sigaction(i, &sa, nil)

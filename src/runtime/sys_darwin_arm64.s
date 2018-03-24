@@ -290,6 +290,10 @@ ret:
 	// if sigreturn fails, we can do nothing but exit
 	B	runtime·exit(SB)
 
+TEXT runtime·cgoSigtramp(SB),NOSPLIT,$0
+	MOVW  	$runtime·sigtramp(SB), R3
+	B	(R3)
+
 TEXT runtime·sigprocmask(SB),NOSPLIT,$0
 	MOVW	how+0(FP), R0
 	MOVD	new+8(FP), R1
