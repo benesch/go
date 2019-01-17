@@ -356,11 +356,32 @@ const (
 	Op386XORLloadidx4
 	Op386NEGL
 	Op386NOTL
+	Op386BSWAPL
 	Op386BSFL
 	Op386BSFW
 	Op386BSRL
 	Op386BSRW
-	Op386BSWAPL
+	Op386BTSLconst
+	Op386CMOVLEQ
+	Op386CMOVLNE
+	Op386CMOVLLT
+	Op386CMOVLGT
+	Op386CMOVLLE
+	Op386CMOVLGE
+	Op386CMOVLLS
+	Op386CMOVLHI
+	Op386CMOVLCC
+	Op386CMOVLCS
+	Op386CMOVWEQ
+	Op386CMOVWNE
+	Op386CMOVWLT
+	Op386CMOVWGT
+	Op386CMOVWLE
+	Op386CMOVWGE
+	Op386CMOVWLS
+	Op386CMOVWHI
+	Op386CMOVWCC
+	Op386CMOVWCS
 	Op386SQRTSD
 	Op386SBBLcarrymask
 	Op386SETEQ
@@ -4240,15 +4261,30 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:         "BSFL",
+		name:         "BSWAPL",
 		argLen:       1,
+		resultInArg0: true,
 		clobberFlags: true,
-		asm:          x86.ABSFL,
+		asm:          x86.ABSWAPL,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 239}, // AX CX DX BX BP SI DI
 			},
 			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:   "BSFL",
+		argLen: 1,
+		asm:    x86.ABSFL,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{1, 0},
 				{0, 239}, // AX CX DX BX BP SI DI
 			},
 		},
@@ -4268,15 +4304,15 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:         "BSRL",
-		argLen:       1,
-		clobberFlags: true,
-		asm:          x86.ABSRL,
+		name:   "BSRL",
+		argLen: 1,
+		asm:    x86.ABSRL,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 239}, // AX CX DX BX BP SI DI
 			},
 			outputs: []outputInfo{
+				{1, 0},
 				{0, 239}, // AX CX DX BX BP SI DI
 			},
 		},
@@ -4296,14 +4332,315 @@ var opcodeTable = [...]opInfo{
 		},
 	},
 	{
-		name:         "BSWAPL",
+		name:         "BTSLconst",
+		auxType:      auxInt8,
 		argLen:       1,
 		resultInArg0: true,
 		clobberFlags: true,
-		asm:          x86.ABSWAPL,
+		asm:          x86.ABTSL,
 		reg: regInfo{
 			inputs: []inputInfo{
 				{0, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLEQ",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLEQ,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLNE",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLNE,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLLT",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLLT,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLGT",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLGT,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLLE",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLLE,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLGE",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLGE,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLLS",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLLS,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLHI",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLHI,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLCC",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLCC,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVLCS",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVLCS,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWEQ",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWEQ,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWNE",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWNE,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWLT",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWLT,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWGT",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWGT,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWLE",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWLE,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWGE",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWGE,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWLS",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWLS,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWHI",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWHI,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWCC",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWCC,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
+			},
+			outputs: []outputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+			},
+		},
+	},
+	{
+		name:         "CMOVWCS",
+		argLen:       3,
+		resultInArg0: true,
+		asm:          x86.ACMOVWCS,
+		reg: regInfo{
+			inputs: []inputInfo{
+				{0, 239}, // AX CX DX BX BP SI DI
+				{1, 239}, // AX CX DX BX BP SI DI
 			},
 			outputs: []outputInfo{
 				{0, 239}, // AX CX DX BX BP SI DI

@@ -149,19 +149,10 @@ func TestIntendedInlining(t *testing.T) {
 		},
 	}
 
-	if runtime.GOARCH != "386" && runtime.GOARCH != "mips64" && runtime.GOARCH != "mips64le" {
-		// nextFreeFast calls sys.Ctz64, which on 386 is implemented in asm and is not inlinable.
-		// We currently don't have midstack inlining so nextFreeFast is also not inlinable on 386.
+	if runtime.GOARCH != "mips64" && runtime.GOARCH != "mips64le" {
 		// On MIPS64x, Ctz64 is not intrinsified and causes nextFreeFast too expensive to inline
 		// (Issue 22239).
 		want["runtime"] = append(want["runtime"], "nextFreeFast")
-	}
-	if runtime.GOARCH != "386" {
-		// As explained above, Ctz64 and Ctz32 are not Go code on 386.
-		// The same applies to Bswap32.
-		want["runtime/internal/sys"] = append(want["runtime/internal/sys"], "Ctz64")
-		want["runtime/internal/sys"] = append(want["runtime/internal/sys"], "Ctz32")
-		want["runtime/internal/sys"] = append(want["runtime/internal/sys"], "Bswap32")
 	}
 	switch runtime.GOARCH {
 	case "amd64", "amd64p32", "arm64", "mips64", "mips64le", "ppc64", "ppc64le", "s390x":

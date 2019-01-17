@@ -62,6 +62,15 @@
 // Lowering pointer arithmetic
 (OffPtr [off] ptr) -> (ADDLconst [off] ptr)
 
+// Lowering other arithmetic
+(Ctz32 <t> x) -> (CMOVLEQ (Select0 <t> (BSFL x)) (MOVLconst <t> [32]) (Select1 <types.TypeFlags> (BSFL x)))
+(Ctz16 x) -> (Select0 (BSFL (BTSLconst <typ.UInt32> [16] x)))
+(Ctz8  x) -> (Select0 (BSFL (BTSLconst <typ.UInt32> [ 8] x)))
+
+(Ctz32NonZero x) -> (Select0 (BSFL x))
+(Ctz16NonZero x) -> (Select0 (BSFL x))
+(Ctz8NonZero  x) -> (Select0 (BSFL x))
+
 (Bswap32 x) -> (BSWAPL x)
 
 (Sqrt x) -> (SQRTSD x)

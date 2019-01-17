@@ -369,6 +369,18 @@ func rewriteValue386(v *Value) bool {
 		return rewriteValue386_OpConstBool_0(v)
 	case OpConstNil:
 		return rewriteValue386_OpConstNil_0(v)
+	case OpCtz16:
+		return rewriteValue386_OpCtz16_0(v)
+	case OpCtz16NonZero:
+		return rewriteValue386_OpCtz16NonZero_0(v)
+	case OpCtz32:
+		return rewriteValue386_OpCtz32_0(v)
+	case OpCtz32NonZero:
+		return rewriteValue386_OpCtz32NonZero_0(v)
+	case OpCtz8:
+		return rewriteValue386_OpCtz8_0(v)
+	case OpCtz8NonZero:
+		return rewriteValue386_OpCtz8NonZero_0(v)
 	case OpCvt32Fto32:
 		return rewriteValue386_OpCvt32Fto32_0(v)
 	case OpCvt32Fto64F:
@@ -21486,6 +21498,125 @@ func rewriteValue386_OpConstNil_0(v *Value) bool {
 	for {
 		v.reset(Op386MOVLconst)
 		v.AuxInt = 0
+		return true
+	}
+}
+func rewriteValue386_OpCtz16_0(v *Value) bool {
+	b := v.Block
+	_ = b
+	typ := &b.Func.Config.Types
+	_ = typ
+	// match: (Ctz16 x)
+	// cond:
+	// result: (Select0 (BSFL (BTSLconst <typ.UInt32> [16] x)))
+	for {
+		x := v.Args[0]
+		v.reset(OpSelect0)
+		v0 := b.NewValue0(v.Pos, Op386BSFL, types.NewTuple(typ.UInt32, types.TypeFlags))
+		v1 := b.NewValue0(v.Pos, Op386BTSLconst, typ.UInt32)
+		v1.AuxInt = 16
+		v1.AddArg(x)
+		v0.AddArg(v1)
+		v.AddArg(v0)
+		return true
+	}
+}
+func rewriteValue386_OpCtz16NonZero_0(v *Value) bool {
+	b := v.Block
+	_ = b
+	typ := &b.Func.Config.Types
+	_ = typ
+	// match: (Ctz16NonZero x)
+	// cond:
+	// result: (Select0 (BSFL x))
+	for {
+		x := v.Args[0]
+		v.reset(OpSelect0)
+		v0 := b.NewValue0(v.Pos, Op386BSFL, types.NewTuple(typ.UInt32, types.TypeFlags))
+		v0.AddArg(x)
+		v.AddArg(v0)
+		return true
+	}
+}
+func rewriteValue386_OpCtz32_0(v *Value) bool {
+	b := v.Block
+	_ = b
+	typ := &b.Func.Config.Types
+	_ = typ
+	// match: (Ctz32 <t> x)
+	// cond:
+	// result: (CMOVLEQ (Select0 <t> (BSFL x)) (MOVLconst <t> [32]) (Select1 <types.TypeFlags> (BSFL x)))
+	for {
+		t := v.Type
+		x := v.Args[0]
+		v.reset(Op386CMOVLEQ)
+		v0 := b.NewValue0(v.Pos, OpSelect0, t)
+		v1 := b.NewValue0(v.Pos, Op386BSFL, types.NewTuple(typ.UInt32, types.TypeFlags))
+		v1.AddArg(x)
+		v0.AddArg(v1)
+		v.AddArg(v0)
+		v2 := b.NewValue0(v.Pos, Op386MOVLconst, t)
+		v2.AuxInt = 32
+		v.AddArg(v2)
+		v3 := b.NewValue0(v.Pos, OpSelect1, types.TypeFlags)
+		v4 := b.NewValue0(v.Pos, Op386BSFL, types.NewTuple(typ.UInt32, types.TypeFlags))
+		v4.AddArg(x)
+		v3.AddArg(v4)
+		v.AddArg(v3)
+		return true
+	}
+}
+func rewriteValue386_OpCtz32NonZero_0(v *Value) bool {
+	b := v.Block
+	_ = b
+	typ := &b.Func.Config.Types
+	_ = typ
+	// match: (Ctz32NonZero x)
+	// cond:
+	// result: (Select0 (BSFL x))
+	for {
+		x := v.Args[0]
+		v.reset(OpSelect0)
+		v0 := b.NewValue0(v.Pos, Op386BSFL, types.NewTuple(typ.UInt32, types.TypeFlags))
+		v0.AddArg(x)
+		v.AddArg(v0)
+		return true
+	}
+}
+func rewriteValue386_OpCtz8_0(v *Value) bool {
+	b := v.Block
+	_ = b
+	typ := &b.Func.Config.Types
+	_ = typ
+	// match: (Ctz8 x)
+	// cond:
+	// result: (Select0 (BSFL (BTSLconst <typ.UInt32> [ 8] x)))
+	for {
+		x := v.Args[0]
+		v.reset(OpSelect0)
+		v0 := b.NewValue0(v.Pos, Op386BSFL, types.NewTuple(typ.UInt32, types.TypeFlags))
+		v1 := b.NewValue0(v.Pos, Op386BTSLconst, typ.UInt32)
+		v1.AuxInt = 8
+		v1.AddArg(x)
+		v0.AddArg(v1)
+		v.AddArg(v0)
+		return true
+	}
+}
+func rewriteValue386_OpCtz8NonZero_0(v *Value) bool {
+	b := v.Block
+	_ = b
+	typ := &b.Func.Config.Types
+	_ = typ
+	// match: (Ctz8NonZero x)
+	// cond:
+	// result: (Select0 (BSFL x))
+	for {
+		x := v.Args[0]
+		v.reset(OpSelect0)
+		v0 := b.NewValue0(v.Pos, Op386BSFL, types.NewTuple(typ.UInt32, types.TypeFlags))
+		v0.AddArg(x)
+		v.AddArg(v0)
 		return true
 	}
 }

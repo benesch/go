@@ -777,7 +777,36 @@ func ssaGenValue(s *gc.SSAGenState, v *ssa.Value) {
 		p.From.Type = obj.TYPE_REG
 		p.From.Reg = v.Args[0].Reg()
 		p.To.Type = obj.TYPE_REG
-		p.To.Reg = v.Reg()
+		if v.Op == ssa.Op386BSFL {
+			p.To.Reg = v.Reg0()
+		} else {
+			p.To.Reg = v.Reg()
+		}
+	case ssa.Op386BTSLconst:
+		p := s.Prog(v.Op.Asm())
+		p.From.Type = obj.TYPE_CONST
+		p.From.Offset = v.AuxInt
+		p.To.Type = obj.TYPE_REG
+		p.To.Reg = v.Args[0].Reg()
+	case ssa.Op386CMOVLEQ, ssa.Op386CMOVWEQ,
+		ssa.Op386CMOVLLT, ssa.Op386CMOVWLT,
+		ssa.Op386CMOVLNE, ssa.Op386CMOVWNE,
+		ssa.Op386CMOVLGT, ssa.Op386CMOVWGT,
+		ssa.Op386CMOVLLE, ssa.Op386CMOVWLE,
+		ssa.Op386CMOVLGE, ssa.Op386CMOVWGE,
+		ssa.Op386CMOVLHI, ssa.Op386CMOVWHI,
+		ssa.Op386CMOVLLS, ssa.Op386CMOVWLS,
+		ssa.Op386CMOVLCC, ssa.Op386CMOVWCC,
+		ssa.Op386CMOVLCS, ssa.Op386CMOVWCS:
+		r := v.Reg()
+		if r != v.Args[0].Reg() {
+			v.Fatalf("input[0] and output not in same register %s", v.LongString())
+		}
+		p := s.Prog(v.Op.Asm())
+		p.From.Type = obj.TYPE_REG
+		p.From.Reg = v.Args[1].Reg()
+		p.To.Type = obj.TYPE_REG
+		p.To.Reg = r
 	case ssa.Op386SETEQ, ssa.Op386SETNE,
 		ssa.Op386SETL, ssa.Op386SETLE,
 		ssa.Op386SETG, ssa.Op386SETGE,
